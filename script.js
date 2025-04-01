@@ -11,8 +11,17 @@ const searchBtn = document.getElementById("search-btn");
 const searchResultList = document.querySelector(".search-results-list");
 const greetingSection = document.querySelector(".greeting");
 const favoritesList = document.querySelector(".favorites-list");
+const movieError = document.querySelector(".movie-error");
 
 // View switching
+function displayLoader() {
+    document.getElementById('loader').style.display = 'block';
+}
+
+function hideLoader() {
+    document.getElementById('loader').style.display = 'none';
+}
+
 searchSelectBtn.addEventListener("click", () => {
     inpCont.value = "";
     searchSec.style.display = "flex";
@@ -36,11 +45,15 @@ async function getMoviesData(movie) {
                 Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
             }
         };
+        displayLoader();
         const response = await fetch(url, options);
         const data = await response.json();
         return data;
     } catch {
         return "Movie not Found";
+    }
+    finally {
+        hideLoader();
     }
 }
 
@@ -111,7 +124,6 @@ function handleMovieDesc(listContainer, movieItem, posterCont, title, year) {
 
     card.appendChild(imgCont);
     card.appendChild(descCont);
-    console.log(card);
     main.appendChild(card);
 }
 
@@ -119,7 +131,10 @@ function showSearchResults(listContainer, data) {
     listContainer.innerHTML = "";
     listContainer.style.display = "grid";
     document.querySelectorAll(".movie-card").forEach(card => card.remove());
-
+    movieError.style.display = "none";
+    if (data.results.length == 0) {
+        movieError.style.display = "block";
+    }
     data.results.forEach(movieItem => {
         const listItem = document.createElement("li");
         listItem.classList.add("list-item");
@@ -176,13 +191,10 @@ async function handleAddToFavorite(movieID) {
         },
         body: JSON.stringify({ media_type: 'movie', media_id: parseInt(movieID), favorite: true })
     };
-
+    displayLoader();
     const response = await fetch(url, options);
     const data = await response.json();
-    console.log(data);
-    if (data.success) {
-        favoritesState.add(movieID);
-    }
+    hideLoader();
 }
 
 async function getFavorites() {
@@ -194,14 +206,17 @@ async function getFavorites() {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
         }
     };
-
+    displayLoader();
     const response = await fetch(url, options);
     const data = await response.json();
+    hideLoader();
     return data;
 }
 
 async function handleDisplayFavorites() {
+    displayLoader();
     const data = await getFavorites();
+    hideLoader();
     showSearchResults(favoritesList, data);
 }
 
