@@ -1,0 +1,364 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+}
+
+:root {
+    --primaryBgColor: #15151a;
+    --secondaryBgColor: #22222b;
+    --primaryFontColor: #f3f3f5;
+    --accentColor: #34d399;
+}
+
+/* Body and Layout */
+body {
+    height: 100vh;
+    background-color: var(--primaryBgColor);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5vh;
+    color: var(--primaryFontColor);
+}
+
+/* Navigation */
+nav {
+    width: 90vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2vh;
+    padding: 2vh;
+    background-color: var(--secondaryBgColor);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease;
+}
+
+nav:hover {
+    background-color: #2a2a33;
+}
+
+nav div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Title */
+.title {
+    margin-left: 1rem;
+    color: var(--primaryFontColor);
+}
+
+/* Select Task Buttons */
+.select-task button {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    background-color: var(--secondaryBgColor);
+    color: var(--primaryFontColor);
+    border: none;
+    border-radius: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.select-task button:hover {
+    background-color: var(--accentColor);
+    transform: scale(1.05);
+}
+
+/* Main Content */
+main {
+    width: 80vw;
+    transform: translateY(15vh);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2vh;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Search Input Container */
+.search-inp-cont {
+    display: flex;
+    width: 50vw;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border 0.3s ease;
+}
+
+/* Input Field and Button */
+#search-inp {
+    background-color: var(--secondaryBgColor);
+    flex-grow: 1;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.6rem;
+    color: var(--primaryFontColor);
+}
+
+#search-btn {
+    border: none;
+    background-color: var(--secondaryBgColor);
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+}
+
+#search-btn:hover {
+    background-color: var(--primaryBgColor);
+}
+
+#search-btn img {
+    object-fit: cover;
+}
+
+/* Sections */
+.search-section,
+.favorites-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Results Grid */
+.search-results-list,
+.favorites-list {
+    width: 60vw;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2vw;
+    list-style: none;
+    padding: 1rem 0;
+    transition: opacity 0.3s ease;
+}
+
+/* List Items */
+.list-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--secondaryBgColor);
+    border-radius: 10px;
+    padding: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.list-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Poster Container in List */
+.search-results-list li div,
+.favorites-list li div {
+    width: 200px;
+    aspect-ratio: 2/3;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.search-results-list li div:hover,
+.favorites-list li div:hover {
+    transform: scale(1.03);
+}
+
+/* Movie Card for Details View */
+.movie-card {
+    width: 60vw;
+    display: flex;
+    background: linear-gradient(135deg, var(--secondaryBgColor), var(--primaryBgColor));
+    padding: 1rem;
+    color: var(--primaryFontColor);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    margin: 15vh 0;
+    animation: slideUpFadeIn 0.5s ease forwards;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Slide-Up Fade-In Animation */
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Description Container in Movie Card */
+.desc-cont {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    transition: opacity 0.3s ease;
+}
+
+/* Top Section in Movie Card (Title & Favorite Icon) */
+.desc-top-cont {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.desc-top-cont img {
+    width: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.desc-top-cont img:hover {
+    transform: scale(1.1);
+}
+
+/* Movie Overview */
+.movie-overview {
+    color: #86889d;
+}
+
+/* Greeting Section */
+.greeting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.greeting-arrow {
+    width: 6rem;
+    animation: bounce 1.5s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.greeting-text {
+    font-family: "Gloria Hallelujah", cursive;
+    font-size: 1.6rem;
+    text-align: center;
+    padding: 0 2rem 2rem;
+    color: #86889d;
+}
+
+/* Responsive Styles */
+
+/* For tablets and smaller devices */
+@media screen and (max-width: 768px) {
+    nav {
+        width: 95vw;
+        padding: 1rem;
+    }
+
+    .search-inp-cont {
+        width: 80vw;
+    }
+
+    main {
+        width: 95vw;
+        transform: translateY(10vh);
+    }
+
+    .search-results-list,
+    .favorites-list {
+        width: 90vw;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .movie-card {
+        width: 90vw;
+        margin: 10vh 0;
+    }
+}
+
+/* For mobile devices */
+@media screen and (max-width: 480px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .select-task {
+        margin-top: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .search-inp-cont {
+        width: 90vw;
+    }
+
+    main {
+        width: 95vw;
+        transform: translateY(8vh);
+    }
+
+    .search-results-list,
+    .favorites-list {
+        width: 95vw;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .movie-card {
+        width: 95vw;
+        margin: 8vh 0;
+        flex-direction: column;
+    }
+
+    .desc-cont {
+        padding: 0.5rem;
+    }
+
+    .title {
+        font-size: 1.2rem;
+    }
+
+    #search-inp {
+        font-size: 1.4rem;
+        padding: 8px 16px;
+    }
+
+    #search-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Scale the search icon appropriately */
+    #search-btn img {
+        width: 80%;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
+}
