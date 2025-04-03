@@ -82,9 +82,7 @@ function handleMovieDesc(listContainer, movieItem, posterCont, title, year) {
 
     // Create favorite and favorited icons
     const favoriteLogo = document.createElement("img");
-    favoriteLogo.src = "/favorite_logo.svg";
-    const favoritedLogo = document.createElement("img");
-    favoritedLogo.src = "/favorited_logo.svg";
+    favoriteLogo.src = "favorite_logo.svg";
     // Wrap both logos in a container
     const logos = document.createElement("div");
     logos.appendChild(favoriteLogo);
