@@ -19,15 +19,16 @@ function hideLoader() {
     document.getElementById('loader').style.display = 'none';
 }
 
-function showSkeletons() {
-    searchResultList.innerHTML = "";
+function showSkeletons(container) {
+    container.innerHTML = "";
     for (let i = 0; i < 6; i++) { // Show 6 skeleton cards
         const skeleton = document.createElement("div");
         skeleton.classList.add("skeleton-item");
         skeleton.classList.add("skeleton");
-        searchResultList.appendChild(skeleton);
+        container.appendChild(skeleton);
     }
 }
+
 function showToast(message) {
     const toast = document.createElement("div");
     toast.classList.add("toast");
@@ -38,17 +39,21 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove("show"), 3000);
     setTimeout(() => toast.remove(), 3500);
 }
+
 searchSelectBtn.addEventListener("click", () => {
     inpCont.value = "";
     searchSec.style.display = "flex";
     favoritesSec.style.display = "none";
-    document.querySelectorAll(".movie-card").forEach(card => card.remove());
+    searchResultList.innerHTML = ""; // Clear search results when switching views
+    movieError.style.display = "none"; // Hide error message when switching views
 });
+
 favoritesSelectBtn.addEventListener("click", () => {
     searchSec.style.display = "none";
     favoritesSec.style.display = "flex";
-    document.querySelectorAll(".movie-card").forEach(card => card.remove());
+    handleDisplayFavorites(); // Load favorites when switching to favorites view
 });
+
 searchSelectBtn.click();
 
 async function getMoviesData(movie) {
@@ -65,8 +70,9 @@ async function getMoviesData(movie) {
         const response = await fetch(url, options);
         const data = await response.json();
         return data;
-    } catch {
-        return "Movie not Found";
+    } catch (error) {
+        console.error("Error fetching movie data:", error);
+        return { results: [] }; // Return empty results array on error
     }
     finally {
         hideLoader();
@@ -74,13 +80,18 @@ async function getMoviesData(movie) {
 }
 
 async function handleSearch() {
-    const inpVal = inpCont.value;
+    const inpVal = inpCont.value.trim();
+    if (!inpVal) {
+        showToast("Please enter a movie title");
+        return;
+    }
+
     searchResultList.style.display = "grid";
     main.style.transform = "translateY(0vh)";
     main.style.transition = "0.15s ease-in-out";
     greetingSection.style.display = "none";
 
-    showSkeletons();
+    showSkeletons(searchResultList);
     const data = await getMoviesData(inpVal);
     showSearchResults(searchResultList, data);
 }
@@ -102,64 +113,92 @@ function handleMovieDesc(listContainer, movieItem, posterCont, title, year) {
     img.style.borderRadius = "12px";
     img.style.objectFit = "cover";
 
-<<<<<<< HEAD
     // Title and year
     const titleElem = document.createElement("h2");
     titleElem.textContent = movieItem.original_title;
-=======
-    // Create favorite and favorited icons
-    const favoriteLogo = document.createElement("img");
-    favoriteLogo.src = "favorite_logo.svg";
-    // Wrap both logos in a container
-    const logos = document.createElement("div");
-    logos.appendChild(favoriteLogo);
-    logos.appendChild(favoritedLogo);
->>>>>>> c5fb5f65be84c8ce65ebde52ccfb25c511852651
 
     const yearElem = document.createElement("p");
-    yearElem.textContent = `Year: ${movieItem.release_date.slice(0, 4)}`;
+    // Check if release_date exists before trying to slice it
+    const releaseYear = movieItem.release_date ? movieItem.release_date.slice(0, 4) : "N/A";
+    yearElem.textContent = `Year: ${releaseYear}`;
 
     // Overview
     const overview = document.createElement("p");
-    overview.textContent = movieItem.overview;
+    overview.textContent = movieItem.overview || "No overview available";
     overview.style.marginTop = "1rem";
 
-    // Favorite button
-    const favoriteBtn = document.createElement("button");
-    favoriteBtn.textContent = "Add to Favorites";
-    favoriteBtn.classList.add("fav-btn");
-    favoriteBtn.addEventListener("click", () => {
-        handleAddToFavorite(movieItem.id);
-        favoriteBtn.textContent = "Favorited";
-        favoriteBtn.disabled = true;
-    });
+    // Check if we're in favorites view
+    const isInFavorites = listContainer === favoritesList;
+
+    // Button container for better styling
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "10px";
+    buttonContainer.style.marginTop = "10px";
+
+    if (isInFavorites) {
+        // Remove from favorites button
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove from Favorites";
+        removeBtn.classList.add("fav-btn");
+        removeBtn.style.backgroundColor = "#ff4757"; // Red color for delete
+        removeBtn.addEventListener("click", () => {
+            handleRemoveFromFavorite(movieItem.id);
+            removeBtn.textContent = "Removed";
+            removeBtn.disabled = true;
+            // Close overlay after a delay
+            setTimeout(() => {
+                overlay.classList.remove("show");
+                handleDisplayFavorites(); // Refresh favorites list
+            }, 1000);
+        });
+        buttonContainer.appendChild(removeBtn);
+    } else {
+        // Add to favorites button
+        const favoriteBtn = document.createElement("button");
+        favoriteBtn.textContent = "Add to Favorites";
+        favoriteBtn.classList.add("fav-btn");
+        favoriteBtn.addEventListener("click", () => {
+            handleAddToFavorite(movieItem.id);
+            favoriteBtn.textContent = "Favorited";
+            favoriteBtn.disabled = true;
+        });
+        buttonContainer.appendChild(favoriteBtn);
+    }
 
     // Append elements
     overlayContent.appendChild(img);
     overlayContent.appendChild(titleElem);
     overlayContent.appendChild(yearElem);
     overlayContent.appendChild(overview);
-    overlayContent.appendChild(favoriteBtn);
+    overlayContent.appendChild(buttonContainer);
 
     // Show overlay
     overlay.classList.add("show");
 
     // Close overlay
     closeBtn.onclick = () => overlay.classList.remove("show");
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") overlay.classList.remove("show");
-    });
-}
 
+    // Close with Escape key
+    const escapeHandler = (e) => {
+        if (e.key === "Escape") {
+            overlay.classList.remove("show");
+            window.removeEventListener("keydown", escapeHandler);
+        }
+    };
+    window.addEventListener("keydown", escapeHandler);
+}
 
 function showSearchResults(listContainer, data) {
     listContainer.innerHTML = "";
     listContainer.style.display = "grid";
-    document.querySelectorAll(".movie-card").forEach(card => card.remove());
     movieError.style.display = "none";
-    if (data.results.length == 0) {
+
+    if (!data.results || data.results.length === 0) {
         movieError.style.display = "block";
+        return;
     }
+
     data.results.forEach(movieItem => {
         const listItem = document.createElement("li");
         listItem.classList.add("list-item");
@@ -189,7 +228,9 @@ function showSearchResults(listContainer, data) {
             poster.src = "logo.svg";
         }
         title.innerText = movieItem.original_title;
-        year.innerText = movieItem.release_date.slice(0, 4);
+
+        // Check if release_date exists before trying to slice it
+        year.innerText = movieItem.release_date ? movieItem.release_date.slice(0, 4) : "N/A";
 
         posterCont.appendChild(poster);
         listItem.appendChild(posterCont);
@@ -204,7 +245,6 @@ function showSearchResults(listContainer, data) {
     });
 }
 
-
 async function handleAddToFavorite(movieID) {
     console.log("Adding movie:", movieID);
     const url = 'https://api.themoviedb.org/3/account/21902211/favorite';
@@ -213,17 +253,57 @@ async function handleAddToFavorite(movieID) {
         headers: {
             accept: 'application/json',
             'content-type': 'application/json',
-            Authorization: 'Bearer YOUR_API_KEY'
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
         },
         body: JSON.stringify({ media_type: 'movie', media_id: parseInt(movieID), favorite: true })
     };
-    displayLoader();
-    const response = await fetch(url, options);
-    const data = await response.json();
-    hideLoader();
 
-    if (data.success) {
-        showToast("Movie added to Favorites!");
+    try {
+        displayLoader();
+        const response = await fetch(url, options);
+        const data = await response.json();
+
+        if (data.success) {
+            showToast("Movie added to Favorites!");
+        } else {
+            showToast("Failed to add to favorites");
+        }
+    } catch (error) {
+        console.error("Error adding to favorites:", error);
+        showToast("Error adding to favorites");
+    } finally {
+        hideLoader();
+    }
+}
+
+async function handleRemoveFromFavorite(movieID) {
+    console.log("Removing movie:", movieID);
+    const url = 'https://api.themoviedb.org/3/account/21902211/favorite';
+    const options = {
+        method: 'POST',
+        headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
+        },
+        body: JSON.stringify({ media_type: 'movie', media_id: parseInt(movieID), favorite: false })
+    };
+
+    try {
+        displayLoader();
+        const response = await fetch(url, options);
+        const data = await response.json();
+
+        if (data.success) {
+            showToast("Movie removed from Favorites!");
+        } else {
+            showToast("Failed to remove from favorites");
+        }
+    } catch (error) {
+        console.error("Error removing from favorites:", error);
+        showToast("Error removing from favorites");
+    } finally {
+        hideLoader();
     }
 }
 
@@ -236,18 +316,23 @@ async function getFavorites() {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
         }
     };
-    displayLoader();
-    const response = await fetch(url, options);
-    const data = await response.json();
-    hideLoader();
-    return data;
+
+    try {
+        displayLoader();
+        const response = await fetch(url, options);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching favorites:", error);
+        return { results: [] }; // Return empty results array on error
+    } finally {
+        hideLoader();
+    }
 }
 
 async function handleDisplayFavorites() {
-    // displayLoader();
-    showSkeletons();
+    showSkeletons(favoritesList);
     const data = await getFavorites();
-    // hideLoader();
     showSearchResults(favoritesList, data);
 }
 
@@ -257,5 +342,5 @@ inpCont.addEventListener("keypress", (e) => {
         searchBtn.click();
     }
 });
-favoritesSelectBtn.addEventListener("click", () => handleDisplayFavorites());
+
 searchBtn.addEventListener("click", () => handleSearch());
