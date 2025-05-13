@@ -102,9 +102,19 @@ function handleMovieDesc(listContainer, movieItem, posterCont, title, year) {
     img.style.borderRadius = "12px";
     img.style.objectFit = "cover";
 
+<<<<<<< HEAD
     // Title and year
     const titleElem = document.createElement("h2");
     titleElem.textContent = movieItem.original_title;
+=======
+    // Create favorite and favorited icons
+    const favoriteLogo = document.createElement("img");
+    favoriteLogo.src = "favorite_logo.svg";
+    // Wrap both logos in a container
+    const logos = document.createElement("div");
+    logos.appendChild(favoriteLogo);
+    logos.appendChild(favoritedLogo);
+>>>>>>> c5fb5f65be84c8ce65ebde52ccfb25c511852651
 
     const yearElem = document.createElement("p");
     yearElem.textContent = `Year: ${movieItem.release_date.slice(0, 4)}`;
