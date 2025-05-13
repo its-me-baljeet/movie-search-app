@@ -1,6 +1,3 @@
-// Global state to track favorited movies
-const favoritesState = new Set();
-
 const main = document.querySelector("main");
 const searchSec = document.querySelector(".search-section");
 const searchSelectBtn = document.querySelector(".select-search");
@@ -22,6 +19,25 @@ function hideLoader() {
     document.getElementById('loader').style.display = 'none';
 }
 
+function showSkeletons() {
+    searchResultList.innerHTML = "";
+    for (let i = 0; i < 6; i++) { // Show 6 skeleton cards
+        const skeleton = document.createElement("div");
+        skeleton.classList.add("skeleton-item");
+        skeleton.classList.add("skeleton");
+        searchResultList.appendChild(skeleton);
+    }
+}
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.classList.add("toast");
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add("show"), 100);
+    setTimeout(() => toast.classList.remove("show"), 3000);
+    setTimeout(() => toast.remove(), 3500);
+}
 searchSelectBtn.addEventListener("click", () => {
     inpCont.value = "";
     searchSec.style.display = "flex";
@@ -63,69 +79,68 @@ async function handleSearch() {
     main.style.transform = "translateY(0vh)";
     main.style.transition = "0.15s ease-in-out";
     greetingSection.style.display = "none";
+
+    showSkeletons();
     const data = await getMoviesData(inpVal);
     showSearchResults(searchResultList, data);
 }
 
 function handleMovieDesc(listContainer, movieItem, posterCont, title, year) {
-    // Hide the list container when showing details
-    listContainer.style.display = "none";
+    const overlay = document.getElementById("movieOverlay");
+    const overlayContent = document.getElementById("overlayMovieContent");
+    const closeBtn = document.getElementById("closeOverlay");
 
-    const card = document.createElement("section");
-    card.classList.add("movie-card");
+    // Clear previous content
+    overlayContent.innerHTML = "";
 
-    const imgCont = document.createElement("div");
-    const descCont = document.createElement("div");
-    descCont.classList.add("desc-cont");
-    const descTopCont = document.createElement("div");
-    descTopCont.classList.add("desc-top-cont");
+    // Poster image
+    const img = document.createElement("img");
+    img.src = movieItem.poster_path
+        ? `https://image.tmdb.org/t/p/w500${movieItem.poster_path}`
+        : "logo.svg";
+    img.style.width = "180px";
+    img.style.borderRadius = "12px";
+    img.style.objectFit = "cover";
 
-    // Create favorite and favorited icons
-    const favoriteLogo = document.createElement("img");
-    favoriteLogo.src = "/favorite_logo.svg";
-    const favoritedLogo = document.createElement("img");
-    favoritedLogo.src = "/favorited_logo.svg";
-    // Wrap both logos in a container
-    const logos = document.createElement("div");
-    logos.appendChild(favoriteLogo);
-    logos.appendChild(favoritedLogo);
+    // Title and year
+    const titleElem = document.createElement("h2");
+    titleElem.textContent = movieItem.original_title;
 
-    // Set initial state based on favoritesState
-    if (favoritesState.has(movieItem.id)) {
-        favoriteLogo.style.display = "none";
-        favoritedLogo.style.display = "block";
-    } else {
-        favoriteLogo.style.display = "block";
-        favoritedLogo.style.display = "none";
-    }
+    const yearElem = document.createElement("p");
+    yearElem.textContent = `Year: ${movieItem.release_date.slice(0, 4)}`;
 
-    // When favorite is clicked, add to favorites and update UI state
-    favoriteLogo.addEventListener("click", () => {
+    // Overview
+    const overview = document.createElement("p");
+    overview.textContent = movieItem.overview;
+    overview.style.marginTop = "1rem";
+
+    // Favorite button
+    const favoriteBtn = document.createElement("button");
+    favoriteBtn.textContent = "Add to Favorites";
+    favoriteBtn.classList.add("fav-btn");
+    favoriteBtn.addEventListener("click", () => {
         handleAddToFavorite(movieItem.id);
-        favoriteLogo.style.display = "none";
-        favoritedLogo.style.display = "block";
+        favoriteBtn.textContent = "Favorited";
+        favoriteBtn.disabled = true;
     });
 
-    descTopCont.appendChild(title);
-    descTopCont.appendChild(logos);
+    // Append elements
+    overlayContent.appendChild(img);
+    overlayContent.appendChild(titleElem);
+    overlayContent.appendChild(yearElem);
+    overlayContent.appendChild(overview);
+    overlayContent.appendChild(favoriteBtn);
 
-    // Adjust poster container position if needed
-    posterCont.style.transform = "translateY(1vh)";
-    imgCont.appendChild(posterCont);
-    imgCont.style.transform = "translateY(-8vh)";
+    // Show overlay
+    overlay.classList.add("show");
 
-    // Build description section with overview and year
-    const movieOverview = document.createElement("p");
-    movieOverview.classList.add("movie-overview");
-    movieOverview.textContent = movieItem.overview;
-    descCont.appendChild(descTopCont);
-    descCont.appendChild(movieOverview);
-    descCont.appendChild(year);
-
-    card.appendChild(imgCont);
-    card.appendChild(descCont);
-    main.appendChild(card);
+    // Close overlay
+    closeBtn.onclick = () => overlay.classList.remove("show");
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") overlay.classList.remove("show");
+    });
 }
+
 
 function showSearchResults(listContainer, data) {
     listContainer.innerHTML = "";
@@ -161,7 +176,7 @@ function showSearchResults(listContainer, data) {
         if (movieItem.poster_path) {
             poster.src = `https://image.tmdb.org/t/p/w500${movieItem.poster_path}`;
         } else {
-            poster.alt = "No image available";
+            poster.src = "logo.svg";
         }
         title.innerText = movieItem.original_title;
         year.innerText = movieItem.release_date.slice(0, 4);
@@ -179,6 +194,7 @@ function showSearchResults(listContainer, data) {
     });
 }
 
+
 async function handleAddToFavorite(movieID) {
     console.log("Adding movie:", movieID);
     const url = 'https://api.themoviedb.org/3/account/21902211/favorite';
@@ -187,7 +203,7 @@ async function handleAddToFavorite(movieID) {
         headers: {
             accept: 'application/json',
             'content-type': 'application/json',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZDIxYWYyZTZjZWY0MTkwY2E1ZTkxZDUzYTE5MmQxZSIsIm5iZiI6MTc0MjgxNDU1MC4xOTcsInN1YiI6IjY3ZTEzZDU2NGNlMDdkNjg0ZTA4MDdmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c5qp6Oy058By2odjQ2hnHhxXB6XSYcoi7O5hDlrwZdM'
+            Authorization: 'Bearer YOUR_API_KEY'
         },
         body: JSON.stringify({ media_type: 'movie', media_id: parseInt(movieID), favorite: true })
     };
@@ -195,6 +211,10 @@ async function handleAddToFavorite(movieID) {
     const response = await fetch(url, options);
     const data = await response.json();
     hideLoader();
+
+    if (data.success) {
+        showToast("Movie added to Favorites!");
+    }
 }
 
 async function getFavorites() {
@@ -214,9 +234,10 @@ async function getFavorites() {
 }
 
 async function handleDisplayFavorites() {
-    displayLoader();
+    // displayLoader();
+    showSkeletons();
     const data = await getFavorites();
-    hideLoader();
+    // hideLoader();
     showSearchResults(favoritesList, data);
 }
 
